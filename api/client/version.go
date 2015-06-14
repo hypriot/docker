@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/dieterreuter/osarch"
 	"github.com/docker/docker/api"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/autogen/dockerversion"
@@ -31,7 +32,7 @@ func (cli *DockerCli) CmdVersion(args ...string) error {
 	if dockerversion.GITCOMMIT != "" {
 		fmt.Fprintf(cli.out, "Git commit (client): %s\n", dockerversion.GITCOMMIT)
 	}
-	fmt.Fprintf(cli.out, "OS/Arch (client): %s/%s\n", runtime.GOOS, runtime.GOARCH)
+	fmt.Fprintf(cli.out, "OS/Arch (client): %s/%s\n", runtime.GOOS, osarch.Arch())
 	if utils.ExperimentalBuild() {
 		fmt.Fprintf(cli.out, "Experimental (client): true\n")
 	}

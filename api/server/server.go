@@ -18,6 +18,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dieterreuter/osarch"
 	"github.com/docker/docker/api"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/autogen/dockerversion"
@@ -248,7 +249,7 @@ func (s *Server) getVersion(version version.Version, w http.ResponseWriter, r *h
 		GitCommit:  dockerversion.GITCOMMIT,
 		GoVersion:  runtime.Version(),
 		Os:         runtime.GOOS,
-		Arch:       runtime.GOARCH,
+		Arch:       osarch.Arch(),
 	}
 
 	if version.GreaterThanOrEqualTo("1.19") {
