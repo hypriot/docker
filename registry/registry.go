@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dieterreuter/osarch"
 	"github.com/docker/docker/autogen/dockerversion"
 	"github.com/docker/docker/pkg/parsers/kernel"
 	"github.com/docker/docker/pkg/timeoutconn"
@@ -52,7 +53,7 @@ func init() {
 		httpVersion = append(httpVersion, useragent.VersionInfo{"kernel", kernelVersion.String()})
 	}
 	httpVersion = append(httpVersion, useragent.VersionInfo{"os", runtime.GOOS})
-	httpVersion = append(httpVersion, useragent.VersionInfo{"arch", runtime.GOARCH})
+	httpVersion = append(httpVersion, useragent.VersionInfo{"arch", osarch.Arch()})
 
 	dockerUserAgent = useragent.AppendVersions("", httpVersion...)
 }

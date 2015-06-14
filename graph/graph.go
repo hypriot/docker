@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dieterreuter/osarch"
 	"github.com/docker/distribution/digest"
 	"github.com/docker/docker/autogen/dockerversion"
 	"github.com/docker/docker/daemon/graphdriver"
@@ -136,7 +137,7 @@ func (graph *Graph) Create(layerData archive.ArchiveReader, containerID, contain
 		DockerVersion: dockerversion.VERSION,
 		Author:        author,
 		Config:        config,
-		Architecture:  runtime.GOARCH,
+		Architecture:  osarch.Arch(),
 		OS:            runtime.GOOS,
 	}
 
