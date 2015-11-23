@@ -9,6 +9,7 @@ export DOCKER_ENGINE_OSARCH="$(docker version | awk '
 ')"
 export DOCKER_ENGINE_GOOS="${DOCKER_ENGINE_OSARCH%/*}"
 export DOCKER_ENGINE_GOARCH="${DOCKER_ENGINE_OSARCH##*/}"
+DOCKER_ENGINE_GOARCH=${DOCKER_ENGINE_GOARCH:=amd64}
 
 # and the client, just in case
 export DOCKER_CLIENT_OSARCH="$(docker version | awk '
