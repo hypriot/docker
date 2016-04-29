@@ -247,7 +247,7 @@ func (s *DockerSuite) TestLogsFollowSlowStdoutConsumer(c *check.C) {
 	c.Assert(logCmd.Start(), checker.IsNil)
 
 	// First read slowly
-	bytes1, err := consumeWithSpeed(stdout, 10, 50*time.Millisecond, stopSlowRead)
+	bytes1, err := consumeWithSpeed(stdout, 10, 5000*time.Millisecond, stopSlowRead)
 	c.Assert(err, checker.IsNil)
 
 	// After the container has finished we can continue reading fast
