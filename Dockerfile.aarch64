@@ -15,7 +15,7 @@
 # the case. Therefore, you don't have to disable it anymore.
 #
 
-FROM aarch64/ubuntu:wily
+FROM aarch64/debian:jessie
 
 # Packaged dependencies
 RUN apt-get update && apt-get install -y \
@@ -36,16 +36,18 @@ RUN apt-get update && apt-get install -y \
 	libapparmor-dev \
 	libc6-dev \
 	libcap-dev \
+	libltdl-dev \
 	libsqlite3-dev \
-	libsystemd-dev \
+	libsystemd-journal-dev \
+	libtool \
 	mercurial \
-	net-tools \
-	parallel \
 	pkg-config \
 	python-dev \
 	python-mock \
 	python-pip \
 	python-websocket \
+	xfsprogs \
+	tar \
 	gccgo \
 	--no-install-recommends
 
@@ -77,6 +79,18 @@ RUN cd /usr/local/lvm2 \
 	&& make install_device-mapper
 # see https://git.fedorahosted.org/cgit/lvm2.git/tree/INSTALL
 
+# Install Go
+# We don't have official binary tarballs for ARM64, eigher for Go or bootstrap,
+# so we use the official armv6 released binaries as a GOROOT_BOOTSTRAP, and
+# build Go from source code.
+ENV GO_VERSION 1.6.2
+RUN mkdir /usr/src/go && curl -fsSL https://storage.googleapis.com/golang/go${GO_VERSION}.src.tar.gz | tar -v -C /usr/src/go -xz --strip-components=1 \
+	&& cd /usr/src/go/src \
+	&& GOOS=linux GOARCH=arm64 GOROOT_BOOTSTRAP="$(go env GOROOT)" ./make.bash
+
+ENV PATH /usr/src/go/bin:$PATH
+ENV GOPATH /go:/go/src/github.com/docker/docker/vendor
+
 # install seccomp: the version shipped in trusty is too old
 ENV SECCOMP_VERSION 2.3.1
 RUN set -x \
@@ -92,22 +106,11 @@ RUN set -x \
 	) \
 	&& rm -rf "$SECCOMP_PATH"
 
-# Install Go
-# We don't have official binary tarballs for ARM64, eigher for Go or bootstrap,
-# so we use gccgo as bootstrap to build Go from source code.
-# We don't use the official ARMv6 released binaries as a GOROOT_BOOTSTRAP, because
-# not all ARM64 platforms support 32-bit mode. 32-bit mode is optional for ARMv8.
-ENV GO_VERSION 1.6.2
-RUN mkdir /usr/src/go && curl -fsSL https://storage.googleapis.com/golang/go${GO_VERSION}.src.tar.gz | tar -v -C /usr/src/go -xz --strip-components=1 \
-	&& cd /usr/src/go/src \
-	&& GOOS=linux GOARCH=arm64 GOROOT_BOOTSTRAP="$(go env GOROOT)" ./make.bash
-
-ENV PATH /usr/src/go/bin:$PATH
-ENV GOPATH /go:/go/src/github.com/docker/docker/vendor
-
-# Only install one version of the registry, because old version which support
-# schema1 manifests is not working on ARM64, we should skip integration-cli
-# tests for schema1 manifests on ARM64.
+# Install two versions of the registry. The first is an older version that
+# only supports schema1 manifests. The second is a newer version that supports
+# both. This allows integration-cli tests to cover push/pull with both schema1
+# and schema2 manifests.
+ENV REGISTRY_COMMIT_SCHEMA1 ec87e9b6971d831f0eff752ddb54fb64693e51cd
 ENV REGISTRY_COMMIT 47a064d4195a9b56133891bbb13620c3ac83a827
 RUN set -x \
 	&& export GOPATH="$(mktemp -d)" \
@@ -115,6 +118,9 @@ RUN set -x \
 	&& (cd "$GOPATH/src/github.com/docker/distribution" && git checkout -q "$REGISTRY_COMMIT") \
 	&& GOPATH="$GOPATH/src/github.com/docker/distribution/Godeps/_workspace:$GOPATH" \
 		go build -o /usr/local/bin/registry-v2 github.com/docker/distribution/cmd/registry \
+	&& (cd "$GOPATH/src/github.com/docker/distribution" && git checkout -q "$REGISTRY_COMMIT_SCHEMA1") \
+	&& GOPATH="$GOPATH/src/github.com/docker/distribution/Godeps/_workspace:$GOPATH" \
+		go build -o /usr/local/bin/registry-v2-schema1 github.com/docker/distribution/cmd/registry \
 	&& rm -rf "$GOPATH"
 
 # Install notary and notary-server
