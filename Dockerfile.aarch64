@@ -15,7 +15,7 @@
 # the case. Therefore, you don't have to disable it anymore.
 #
 
-FROM aarch64/debian:jessie
+FROM aarch64/ubuntu:wily
 
 # Packaged dependencies
 RUN apt-get update && apt-get install -y \
@@ -38,9 +38,11 @@ RUN apt-get update && apt-get install -y \
 	libcap-dev \
 	libltdl-dev \
 	libsqlite3-dev \
-	libsystemd-journal-dev \
+	libsystemd-dev \
 	libtool \
 	mercurial \
+	net-tools \
+	parallel \
 	pkg-config \
 	python-dev \
 	python-mock \
