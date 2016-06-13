@@ -121,6 +121,7 @@ RUN set -x \
 	&& GOPATH="$GOPATH/src/github.com/docker/distribution/Godeps/_workspace:$GOPATH" \
 		go build -o /usr/local/bin/registry-v2 github.com/docker/distribution/cmd/registry \
 	&& (cd "$GOPATH/src/github.com/docker/distribution" && git checkout -q "$REGISTRY_COMMIT_SCHEMA1") \
+        && (cd "$GOPATH/src/github.com/docker/distribution/Godeps/_workspace/src/github.com/bugsnag" && rm -rf panicwrap && git clone https://github.com/bugsnag/panicwrap) \
 	&& GOPATH="$GOPATH/src/github.com/docker/distribution/Godeps/_workspace:$GOPATH" \
 		go build -o /usr/local/bin/registry-v2-schema1 github.com/docker/distribution/cmd/registry \
 	&& rm -rf "$GOPATH"
